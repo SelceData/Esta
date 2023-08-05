@@ -1,0 +1,11 @@
+{
+  "game": {
+    "userStartMoney": 1,
+    "lobbySizeDefault": 4,
+    "lobbySizeMin": 1,
+    "lobbySizeMax": 8,
+    "rentModFullSet": 1,
+    "rentModDefault": 0.1,
+    "mapDefault": "Ukraine"
+  }
+}

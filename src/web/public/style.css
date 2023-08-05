@@ -1,0 +1,52 @@
+:root {
+  --background-primary: #282430;
+  --background-secondary: #2b2a3c;
+  --background-tertiary: #120e17;
+}
+
+body {
+  background: var(--background-primary);
+}
+
+section.suite {
+  color: white;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+section.suite > h1 {
+  border-radius: 5px;
+  padding: 10px;
+  background: var(--background-secondary);
+}
+
+section.suite:has(dt.error) > h1 {
+  color: red;
+}
+
+section.suite > dl > dd + dt {
+  margin-top: 5px;
+  border-top: thin solid var(--background-tertiary);
+}
+
+section.suite > dl > dt {
+  color: greenyellow;
+  padding: 5px;
+}
+
+section.suite > dl > dt.error {
+  color: red;
+}
+
+section.suite > dl > dt + dt {
+  color: gray !important;
+}
+
+section.suite > dl {
+  margin-left: 40px;
+}
+
+code {
+  padding: 3px;
+  border-radius: 3px;
+  background-color: var(--background-tertiary);
+}

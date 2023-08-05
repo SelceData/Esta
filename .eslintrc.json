@@ -1,0 +1,75 @@
+{
+    "env": {
+        "commonjs": true
+    },
+    "extends": [
+        "eslint:recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "ignorePatterns": [
+        "dist/**",
+        "types/**",
+        "**.js"
+    ],
+    "overrides": [
+        {
+            "extends": [
+                "plugin:@typescript-eslint/recommended"
+            ],
+            "files": [
+                "**.ts"
+            ],
+            "plugins": [
+                "@typescript-eslint"
+            ],
+            "rules": {
+                "@typescript-eslint/no-unused-vars": "warn",
+                "no-unused-vars": "off",
+                "@typescript-eslint/no-extra-parens": "warn",
+                "no-extra-parens": "off",
+                "@typescript-eslint/no-extra-semi": "warn",
+                "no-extra-semi": "off",
+                "@typescript-eslint/ban-types": "off",
+                "ban-types": "off",
+                "@typescript-eslint/no-var-requires": "warn",
+                "no-var-requires": "off",
+                "@typescript-eslint/no-empty-function": "warn",
+                "no-empty-function": "off"
+            }
+        }
+    ],
+    "rules": {
+        "no-async-promise-executor": "off",
+        "no-unused-labels": "off",
+        "eol-last": [
+            "warn",
+            "never"
+        ],
+        "prefer-template": "warn",
+        "no-undef": "off",
+        "no-inner-declarations": "off",
+        "no-case-declarations": "off",
+        "indent": [
+            "warn",
+            2,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "linebreak-style": [
+            "warn",
+            "windows"
+        ],
+        "quotes": [
+            "warn",
+            "double"
+        ],
+        "semi": [
+            "warn",
+            "always"
+        ]
+    }
+}
