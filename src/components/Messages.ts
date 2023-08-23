@@ -1,4 +1,4 @@
-import { APIEmbed, Attachment, userMention } from "discord.js";
+import { APIEmbed, userMention } from "discord.js";
 import { Session } from "../types/Session.js";
 import { APIRow, Row } from "./Row.js";
 import { Embeds } from "./Embeds.js";
