@@ -24,7 +24,7 @@ Bot.on(Events.Error,
   }
 );
 
-/*Bot.on(Events.MessageDelete,
+Bot.on(Events.MessageDelete,
   function (message) {
     const session = db.data.sessions.get(message.id);
     if (session) session.close(SessionClosedReason.MessageDeleted);
