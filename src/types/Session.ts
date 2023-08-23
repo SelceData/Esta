@@ -1,5 +1,5 @@
 import { Canvas } from "canvas";
-import { CommandInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
+import { ChatInputCommandInteraction, CommandInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
 import { GameMap, GameMapName } from "./GameMap.js";
 import { db } from "../Bot.js";
 import config from "../botconfig.json" assert { type: "json" };
@@ -62,12 +62,19 @@ export class Session extends Drawable {
   static extract(db: DataBase, id: string): Session | undefined {
     return db.data.sessions.get(id);
   }
-  static async create(db: DataBase, interaction: ModalSubmitInteraction | CommandInteraction | MessageComponentInteraction): Promise<Session> {
-    const session = new Session({ message: await interaction.deferReply({ fetchReply: true }), map: GameMap.pack[config.game.mapDefault as GameMapName], players: [], size: config.game.lobbySizeDefault });
+  static async create(db: DataBase, interaction: ChatInputCommandInteraction): Promise<Session> {
+    const session = new Session(
+      {
+        message: await interaction.deferReply({ fetchReply: true }),
+        map: GameMap.pack[(interaction.options.getString("map") ?? config.game.mapDefault) as GameMapName],
+        players: [],
+        size: interaction.options.getInteger("max_players") ?? config.game.lobbySizeDefault
+      }
+    );
     db.data.sessions.set(session.id, session);
     return session;
   }
-  get id() { if(this.message?.id) return this.message.id; else throw new Error("Unknown session has not message. Can not get own id."); }
+  get id() { if (this.message?.id) return this.message.id; else throw new Error("Unknown session has not message. Can not get own id."); }
   get usedColors(): PlayerColor[] { return this.allPlayers.map(player => player.color); }
   get availableColors(): PlayerColor[] { return Object.values(PlayerColor).filter(color => !this.usedColors.includes(color)); }
   get allPlayersReady(): Player[] {
@@ -79,8 +86,8 @@ export class Session extends Drawable {
   kick(player: Player): SessionKickResult {
     if (!this.allPlayers.includes(player)) return SessionKickResult.IsNotPlayer;
     this.allPlayers.splice(this.allPlayers.indexOf(player), 1);
-    if(this.allPlayers.length < 1) return SessionKickResult.AllPlayersLeft;
-    if(this.allPlayers.length > 1) this.nextPlayerStep();
+    if (this.allPlayers.length < 1) return SessionKickResult.AllPlayersLeft;
+    if (this.allPlayers.length > 1) this.nextPlayerStep();
     return SessionKickResult.Success;
   }
   join(player: Player): SessionJoinResult {
@@ -98,11 +105,11 @@ export class Session extends Drawable {
   async close(reason: SessionClosedReason | Error): Promise<Message | void> {
     if (this.closedReason !== undefined) return;
     const channel = this.message?.channel ?? this.messageSub?.channel;
-    if(this.message?.deletable) {
+    if (this.message?.deletable) {
       this.message.delete();
       db.data.sessions.delete(this.message.id);
     }
-    if(this.messageSub?.deletable) {
+    if (this.messageSub?.deletable) {
       this.messageSub.delete();
       db.data.sessions.delete(this.messageSub.id);
     }
@@ -125,12 +132,11 @@ export class Session extends Drawable {
   /**
    * @returns New messages and player steps.
    */
-  async nextPlayerStep() {
+  async nextPlayerStep(resetLastActions: boolean = true) {
     this.lastDice = Dice();
     this.player = this.allPlayers[(this.allPlayers.filter(p => p.status !== PlayerStatus.Dead).indexOf(this.player ?? this.allPlayers[0]) + 1) % this.allPlayers.length];
     if (!this.player) throw new Error("Can not get next player.");
-
-    this.player.step();
+    this.player.step(resetLastActions);
     this.updateMessageSub();
     this.updateMessage();
     return { message: this.message as Message, submessage: this.messageSub as Message, distance: this.lastDice };
@@ -139,9 +145,9 @@ export class Session extends Drawable {
     if (this.message?.editable) {
       if (this.status == SessionStatus.Lobby)
         this.message.edit(Messages.sessionInLobby(this));
-      else if(this.status == SessionStatus.InGame)
+      else if (this.status == SessionStatus.InGame)
         this.message.edit(await Messages.sessionInGame(this));
-      else if(this.status == SessionStatus.Closed)
+      else if (this.status == SessionStatus.Closed)
         this.message.edit(Messages.sessionClosed(this));
     } else {
       this.close(SessionClosedReason.MessageDeleted);
@@ -153,14 +159,16 @@ export class Session extends Drawable {
       let msgopts: MessageOptions = Messages.playerActed(this.player);
       if (this.player.place instanceof PlaceMessage && (this.player.place.onEnterMessage != "playerBuyQuestion" || this.player.currentPlaceBuyable))
         msgopts = Messages[this.player.place.onEnterMessage](this.player);
-      if(!this.messageSub) {
+      if (!this.messageSub) {
         this.messageSub = await this.message.reply(msgopts);
         db.data.sessions.set(this.messageSub.id, this);
       } else if (this.messageSub.editable) {
+        this.messageSub.delete();
         if (this.status == SessionStatus.InGame)
-          this.messageSub.edit(msgopts);
+          this.messageSub = await this.message.reply(msgopts);
         if (this.status == SessionStatus.Closed)
-          this.messageSub.edit(Messages.sessionClosed(this));
+          this.messageSub = await this.message.reply(Messages.sessionClosed(this));
+        db.data.sessions.set(this.messageSub.id, this);
       }
     } else this.close(SessionClosedReason.MessageDeleted);
     return this.messageSub;

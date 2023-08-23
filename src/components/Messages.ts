@@ -1,4 +1,4 @@
-import { APIEmbed, userMention } from "discord.js";
+import { APIEmbed, Attachment, userMention } from "discord.js";
 import { Session } from "../types/Session.js";
 import { APIRow, Row } from "./Row.js";
 import { Embeds } from "./Embeds.js";
@@ -21,8 +21,8 @@ export type MessageOptionsContainer = MessageOptions | MessageCallerEmpty | Mess
 export const Messages = {
   error: { content: "There was an error while executing this interaction!", ephemeral: true },
   errorIsNotEstate: { content: "You can't buy this place.", ephemeral: true },
-  sessionInLobby(session: Session) { return { embeds: [Embeds.sessionInLobby(session)], components: [Row(Buttons.ready, Buttons.joinLeave)] }; },
-  async sessionInGame(session: Session) { return { embeds: [Embeds.sessionInfo(session), Embeds.gameRender], components: [Row(Buttons.leave, Buttons.myPlace)], files: [ await session.getAttachment()] }; },
+  sessionInLobby(session: Session) { return { embeds: [Embeds.sessionInLobby(session)], components: [Row(Buttons.joinLeave, Buttons.ready)] }; },
+  async sessionInGame(session: Session) { return { embeds: [Embeds.sessionInfo(session), Embeds.gameRender], components: [Row(Buttons.myPlace, Buttons.leave)], files: [await session.getAttachment()] }; },
   sessionClosed(session: Session, error?: Error) { if (error) console.log(error); return { content: "", embeds: [Embeds.sessionClosed(session, error)], components: [], files: [] }; },
   playerPlaceInfo(player: Player) { return { embeds: [Embeds.playerPlaceInfo(player)], files: [], ephemeral: true }; },
   playerActed(player: Player) { return { content: userMention((player.session.player as Player).person.id), embeds: [Embeds.playerActed(player)], components: [Row(Buttons.actOk)], files: [] }; },

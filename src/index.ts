@@ -39,3 +39,7 @@ if (process.argv.includes("web-only")) {
         process.exit();
       });
 }
+
+process.on("uncaughtException", function (exception) {
+  console.error(exception);
+});

@@ -80,10 +80,11 @@ export class Player {
   join(session: Session): SessionJoinResult {
     return session.join(this);
   }
-  step() {
+  step(resetLastActions: boolean = false) {
     if (this.session.map instanceof GameMap) {
       this.lastStep = this.lastDice;
-      this.lastActions = [];
+      if (resetLastActions)
+        this.lastActions = [];
       for (let i = 0; i < this.lastDice - 1; i++) {
         this.place = this.place?.nextPlace(this.session.map) as Place;
         this.place.onCross?.(this); // adds elements to lastActions

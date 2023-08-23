@@ -9,7 +9,6 @@ import { Buy } from "./types/place/action/Buy.js";
 import chalk from "chalk";
 import * as CommandsManager from "./utils/CommandsManager.js";
 import { ButtonName } from "./components/Buttons.js";
-import { Modals, ModalName } from "./components/Modals.js";
 import { Casino } from "./types/place/action/Casino.js";
 import { Dice } from "./utils/Random.js";
 import { Logger } from "./utils/Logger.js";
@@ -25,12 +24,12 @@ Bot.on(Events.Error,
   }
 );
 
-Bot.on(Events.MessageDelete,
+/*Bot.on(Events.MessageDelete,
   function (message) {
     const session = db.data.sessions.get(message.id);
     if (session) session.close(SessionClosedReason.MessageDeleted);
   }
-);
+);*/
 
 Bot.on(Events.InteractionCreate,
   async function (interaction) {
@@ -39,7 +38,8 @@ Bot.on(Events.InteractionCreate,
         const command_name = interaction.commandName as CommandName;
         switch (command_name) {
           case "start":
-            interaction.showModal(Modals.createLobby);
+            const session = await Session.create(db, interaction);
+            interaction.editReply(Messages.sessionInLobby(session));
             break;
 
           case "profile":
@@ -48,18 +48,6 @@ Bot.on(Events.InteractionCreate,
 
           default:
             logger.logFail(`Unknown slash command: ${command_name}`);
-            break;
-        }
-      } else if (interaction.isModalSubmit()) {
-        const modal_name = interaction.customId as ModalName;
-        switch (modal_name) {
-          case "createLobby":
-            const session = await Session.create(db, interaction);
-            interaction.editReply(Messages.sessionInLobby(session));
-            break;
-
-          default:
-            logger.logFail(`Unknown modal: ${modal_name}`);
             break;
         }
       } else if (interaction.isButton()) {
@@ -149,8 +137,7 @@ Bot.on(Events.InteractionCreate,
             else {
               interaction.deferUpdate();
               playerdb.lastActions.push(new Buy(playerdb, `You bought ${playerdb.place.name} for ${playerdb.currency.value(playerdb.place.price)}.`).act());
-              sessiondb.updateMessageSub();
-              sessiondb.updateMessage();
+              sessiondb.nextPlayerStep(false);
             }
             break;
           case "actCasinoOk":
@@ -161,7 +148,7 @@ Bot.on(Events.InteractionCreate,
               sessiondb.lastDice = Dice();
               const act = new Casino(playerdb, sessiondb.lastDice, `You won ${playerdb.currency.value(sessiondb.lastDice)}.`, "You lose. You won't get anything.");
               playerdb.lastActions.push(act);
-              sessiondb.updateMessageSub();
+              sessiondb.nextPlayerStep(false);
             }
             break;
           case "actCasinoNo":
@@ -169,7 +156,7 @@ Bot.on(Events.InteractionCreate,
             else if (!playerdb?.isCurrent) interaction.reply(Messages.playerNotYourTurn);
             else {
               interaction.deferUpdate();
-              sessiondb.updateMessageSub();
+              sessiondb.nextPlayerStep(false);
             }
             break;
           case "actBuyNo":
@@ -177,7 +164,7 @@ Bot.on(Events.InteractionCreate,
             else if (!playerdb?.isCurrent) interaction.reply(Messages.playerNotYourTurn);
             else {
               interaction.deferUpdate();
-              sessiondb.updateMessageSub();
+              sessiondb.nextPlayerStep(false);
             }
             break;
           default:

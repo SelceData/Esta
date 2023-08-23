@@ -38,7 +38,9 @@ export class Person {
   get id(): string {
     return this.user.id;
   }
-  get name(): string {
-    return this.user instanceof User ? this.user.username : this.user.displayName;
+  get name(): string {  
+    if (this.user instanceof User && !this.user.displayName)
+      return this.user.username;
+    return this.user.displayName;
   }
 }

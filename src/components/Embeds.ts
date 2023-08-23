@@ -40,7 +40,7 @@ export const Embeds = {
   playerActed(player: Player): APIEmbed {
     return {
       title: `You did ${player.lastStep} steps.`,
-      description: player.lastActions.length == 0 ? "That is all." : player.lastActions.map(action => `* ${action.description}`).join("\n")
+      description: player.lastActions.length == 0 ? "That's all." : player.lastActions.map(action => `* ${action.description}`).join("\n")
     };
   },
   playerBuyQuestion(player: Player): APIEmbed {
