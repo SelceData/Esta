@@ -29,7 +29,7 @@ Bot.on(Events.MessageDelete,
     const session = db.data.sessions.get(message.id);
     if (session) session.close(SessionClosedReason.MessageDeleted);
   }
-);*/
+);
 
 Bot.on(Events.InteractionCreate,
   async function (interaction) {
